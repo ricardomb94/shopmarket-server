@@ -15,6 +15,7 @@ const DOMAIN = process.env.DOMAIN_KEY;
                 error:'Cet email existe déjà'
             });
         }
+        
     
         const token = jwt.sign({name, email, password},
             process.env.JWT_ACCOUNT_ACTIVATION,
@@ -37,7 +38,6 @@ const DOMAIN = process.env.DOMAIN_KEY;
             mg.messages()
                 .send(data)
                 .then(sent => {
-                    console.log('SIGNUP EMAIL SENT', data)
                     console.log('SIGNUP EMAIL SENT', sent)
                     return res.json({
                         message: `UN email vous été envoyé sur ${email}.Suivez les instructions pour activer votre compte`
@@ -52,5 +52,76 @@ const DOMAIN = process.env.DOMAIN_KEY;
     });
  };
  
+ //Pour activer le compte il nous faut le token
+ exports.accountActivation = (req, res) => {
+    const {token} = req.body
+    if(token){
+        jwt.verify(token, process.env.JWT_ACCOUNT_ACTIVATION, function(err, decode){
+        //en cas d'erreur envoyer un msg d'erreur au user
+            if(err){
+                console.log('JWT VERIFY IN ACCOUNT ACTIVATION ERROR', err)
+                return res.status(401).json({
+                    err: 'Votre lien est arrivé à expiration. Veuillez recommencer'
+                })
+            }
+            //En absence d'erreur on peut recueillir les infos utilisateurs( donc le nom, l'email et le mot de passe) grâce à la méthode decode() en lui passant le token en paramètre
+            
+            const {name, email, password} = jwt.decode(token)
+            
+            
+            //On instancie un nouveau user inspiré du model prédéfini/mongoose
+            const user = new User({name, email, password})
+            console.log('NEW USER', user)
+            
+            //Enfin on peut sauvegarder le user dans la base de données
+            user.save((err, user)=> {
+                if (err){
+                    console.log('SAVE USER IN ACCOUNT ACTIVATION ERROR', err)
+                    return res.status(401).json({
+                        error:'La sauvegarde n\'a pas fonctionnée. Veuillez vous inscrire à nouveau'
+                    });
+                }
+                return res.json({
+                    user,
+                    message: 'Vous êtes inscrit avec succès.Vous pouvez vous connecter.'
+                });
+            });
+        });
+    }else{
+        //Si l'utilisateur tente de se connecter sans token
+        //on renvoie un msge d'erreur
+        return res.json({
+            message: 'Quelque chose à mal fonctionnée. Veuillez recommencer.'
+        });
+    }
+ };
  
- 
+ exports.signin = (req, res) => {
+ const { email, password } = req.body;
+//  console.log("=>",req.body)
+ //On vérifie que l'utilisateur qui se connecte est déja enregistré
+    User.findOne({email}).exec((err, user) => {
+        if(err ||!user){
+            return res.status(400).json({
+                error: 'Vous n\'êtes pas encore inscrit. Veuillez créer un compte'
+            })
+        }
+        //Autentifier
+        if(!user.authenticate(password)) {
+            return res.status(400).json({
+                error: 'L\'email et le  mot de passe ne corrrespondent pas '
+            });
+        }
+        //On génère le token et on l'envoie au cliente
+        const token = jwt.sign({_id: user._id}, process.env.JWT_SECRET, {expiresIn:'7d'});
+        //On extrait les infos utilisateurs
+        const {_id, name, email, role} = user 
+        
+        return res.json({
+            token,
+            user: {_id, name, email, role}
+        });
+    });
+ };
+
+

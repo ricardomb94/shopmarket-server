@@ -22,5 +22,5 @@ exports.userSigninValidator = [
         .withMessage('Inserez un email valide'),
     check('password')
         .isLength({min: 6})
-        .withMessage('Le mot de pass doit contenir au moins 6 caractères')
+        .withMessage('Le mot de passe doit contenir au moins 6 caractères')
 ];

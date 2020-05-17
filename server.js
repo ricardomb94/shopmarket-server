@@ -25,6 +25,7 @@ const authRoutes = require('./routes/auth')
 
 //app middleware
 app.use(morgan('dev'));
+app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
 //app.use(cors()); // Autorise le partage de ressources entre origines multiples 
 if((process.env.NODE_ENV = 'development')){
