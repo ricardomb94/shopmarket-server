@@ -1,5 +1,6 @@
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
+const expressJwt = require('express-Jwt')
 
 //Mailgun
 const mailgun = require("mailgun-js");
@@ -61,16 +62,16 @@ const DOMAIN = process.env.DOMAIN_KEY;
             if(err){
                 console.log('JWT VERIFY IN ACCOUNT ACTIVATION ERROR', err)
                 return res.status(401).json({
-                    err: 'Votre lien est arrivé à expiration. Veuillez recommencer'
-                })
+                    err: 'Votre lien est expiré. Veuillez vous réinscrire'
+                });
             }
             //En absence d'erreur on peut recueillir les infos utilisateurs( donc le nom, l'email et le mot de passe) grâce à la méthode decode() en lui passant le token en paramètre
             
-            const {name, email, password} = jwt.decode(token)
+            const {name, email, password} = jwt.decode(token);
             
             
             //On instancie un nouveau user inspiré du model prédéfini/mongoose
-            const user = new User({name, email, password})
+            const user = new User({name, email, password});
             console.log('NEW USER', user)
             
             //Enfin on peut sauvegarder le user dans la base de données
@@ -78,7 +79,7 @@ const DOMAIN = process.env.DOMAIN_KEY;
                 if (err){
                     console.log('SAVE USER IN ACCOUNT ACTIVATION ERROR', err)
                     return res.status(401).json({
-                        error:'La sauvegarde n\'a pas fonctionnée. Veuillez vous inscrire à nouveau'
+                        error:'La sauvegarde n\'a pas fonctionnée. Veuillez réessayer'
                     });
                 }
                 return res.json({
@@ -104,7 +105,7 @@ const DOMAIN = process.env.DOMAIN_KEY;
         if(err ||!user){
             return res.status(400).json({
                 error: 'Vous n\'êtes pas encore inscrit. Veuillez créer un compte'
-            })
+            });
         }
         //Autentifier
         if(!user.authenticate(password)) {
@@ -124,4 +125,26 @@ const DOMAIN = process.env.DOMAIN_KEY;
     });
  };
 
+
+//Vérifier la validité du token et rendre la data relative à user(info profile/ user._id ) facilement accessible à partir  de l'objet request.
+exports.requireSignin = expressJwt({
+    secret: process.env.JWT_SECRET // req.user._id
+});
+
+exports.adminMiddleware = (req, res, next) => {
+    User.findById({_id:req.user._id}).exec((err, user) => {
+        if(err || !user){
+            return res.status(400).json({
+                error: 'Utilisateur non trouvé '
+            });
+        }
+        if(user.role !== 'admin'){
+            return res.status(400).json({
+                error:'Resource Admin. Accès refusée'
+            });
+        }
+        req.profile = user;
+        next();
+    });
+};
 
