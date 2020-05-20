@@ -17,7 +17,7 @@ mongoose
         useFindAndModify: false,
         useUnifiedTopology: true,
         useCreateIndex: true
-    })
+        })
     .then(() => console.log('BDD connectée'))
     .catch(err => console.log('DB CONNECTION ERROR:', err));
 
