@@ -114,7 +114,7 @@ const DOMAIN = process.env.DOMAIN_KEY;
             });
         }
         //On génère le token et on l'envoie au cliente
-        const token = jwt.sign({_id: req.user._id}, process.env.JWT_SECRET, {expiresIn:'7d'});
+        const token = jwt.sign({_id: req.userId}, process.env.JWT_SECRET, {expiresIn:'15d'});
         //On extrait les infos utilisateurs
         const {_id, name, email, role} = user 
         
