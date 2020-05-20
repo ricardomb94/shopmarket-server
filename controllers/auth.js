@@ -114,12 +114,12 @@ const DOMAIN = process.env.DOMAIN_KEY;
             });
         }
         //On génère le token et on l'envoie au cliente
-        const token = jwt.sign({_id: user._id}, process.env.JWT_SECRET, {expiresIn:'7d'});
+        const token = jwt.sign({_id: req.user._id}, process.env.JWT_SECRET, {expiresIn:'7d'});
         //On extrait les infos utilisateurs
         const {_id, name, email, role} = user 
         
         return res.json({
-            token,
+            authoken:token,
             user: {_id, name, email, role}
         });
     });
@@ -135,10 +135,10 @@ exports.adminMiddleware = (req, res, next) => {
     User.findById({_id:req.user._id}).exec((err, user) => {
         if(err || !user){
             return res.status(400).json({
-                error: 'Utilisateur non trouvé '
+                error: 'Vous n\'êtes pas un utilisateur authentifié'
             });
         }
-        if(user.role !== 'admin'){
+        if(req.user.role !== 'admin'){
             return res.status(400).json({
                 error:'Resource Admin. Accès refusée'
             });

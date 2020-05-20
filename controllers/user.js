@@ -8,6 +8,7 @@ exports.userById = (req, res, next, userId) => {
             })
         }
         req.Profile = user;
+        console.log('USER = >',user)
         next();
     })
 };
@@ -41,7 +42,7 @@ exports.update = (req, res) => {
                 error: 'Le nom est obligatoire'
             });
         }else{
-            user.name = name
+            req.user.name = name
         }
         if(password){
             if(password.length < 6){
