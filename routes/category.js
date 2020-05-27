@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const verify = require('../controllers/verifyToken')
+// const verify = require('../controllers/verifyToken')
 
 
 const { create, categoryById, read, update, remove, list } = require("../controllers/category");
