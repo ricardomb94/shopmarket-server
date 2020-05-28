@@ -16,7 +16,8 @@ exports.categoryById = (req,res, next, id) =>{
 };
 
 exports.create = (req, res) => {
-    const category = new Category(req.body)
+    console.log('req', req.body);
+    const category = new Category(req.body.category)
     category.save((err, data) => {
         if (err) {
             return res.status(400).json({
@@ -57,7 +58,7 @@ exports.remove = (req, res) => {
             return res.status(400).json({
                 error: errorHandler(err)
                 //  error:"Cette catégorie n'existe pas dans notre catalogue"
-                
+
             });
         }
         res.json({

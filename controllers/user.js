@@ -1,4 +1,4 @@
-const User = require('../models/User')
+const User = require('../models/user')
 
 exports.userById = (req, res, next, userId) => {
     User.findById(userId).exec((err, user) => {
@@ -8,6 +8,7 @@ exports.userById = (req, res, next, userId) => {
             })
         }
         req.Profile = user;
+        console.log('USER = >',user)
         next();
     })
 };
@@ -29,7 +30,7 @@ exports.read = (req, res) => {
 exports.update = (req, res) => {
     console.log('UPDATE USER - req.user', req.user, 'UPDATE DATA', req.body)
     const {name, password} = req.body
-    
+
     User.findOne({_id: req.user._id},(err,user)=> {
         if(err || !user){
             return res.status(400).json({
@@ -41,7 +42,7 @@ exports.update = (req, res) => {
                 error: 'Le nom est obligatoire'
             });
         }else{
-            user.name = name
+            req.user.name = name
         }
         if(password){
             if(password.length < 6){
@@ -50,7 +51,7 @@ exports.update = (req, res) => {
                 });
             }else {
                 user.password = password;
-            } 
+            }
         }
         user.save((err,updatedUser)=> {
             if(err){
@@ -64,5 +65,5 @@ exports.update = (req, res) => {
             res.json(updatedUser);
         });
     });
-   
+
 };

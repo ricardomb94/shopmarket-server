@@ -6,6 +6,8 @@ const mongoose = require('mongoose');
 require('dotenv').config();
 
 
+
+
 const app = express();
 
 //Connexion BDD
@@ -15,7 +17,7 @@ mongoose
         useFindAndModify: false,
         useUnifiedTopology: true,
         useCreateIndex: true
-    })
+        })
     .then(() => console.log('BDD connectée'))
     .catch(err => console.log('DB CONNECTION ERROR:', err));
 
@@ -23,6 +25,8 @@ mongoose
 // import routes
 const authRoutes = require('./routes/auth')
 const userRoutes = require('./routes/user');
+const categoryRoutes = require('./routes/category');
+const productRoutes = require('./routes/product');
 
 //app middleware
 app.use(morgan('dev'));
@@ -33,8 +37,14 @@ if((process.env.NODE_ENV = 'development')){
      app.use(cors({origin: `http://localhost:3000`}))
  }
 //middleware
-app.use('/api',authRoutes)
-app.use('/api',userRoutes)
+app.use('/api',authRoutes);
+app.use('/api',userRoutes);
+app.use('/api',categoryRoutes);
+app.use('/api',productRoutes);
+
+
+
+
 
 const port = process.env.PORT || 8000;
 app.listen(port, () => {
