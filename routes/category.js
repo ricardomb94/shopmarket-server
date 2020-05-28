@@ -1,6 +1,5 @@
 const express = require("express");
 const router = express.Router();
-const expressJwt = require('express-Jwt')
 const verify = require("../controllers/verifiedToken");
 
 const { create, categoryById, read, update, remove, list } = require("../controllers/category");
@@ -9,7 +8,7 @@ const {userById} = require('../controllers/user')
 
 // const { userById } = require("../controllers/user");
 router.get('/category/:categoryId', read)
-router.post('/category/create/:userId', verify, create);
+router.post('/category/create/:userId', requireSignin, create);
 router.put('/category/:categoryId/:userId', requireSignin, adminMiddleware, update);
 router.delete('/category/:categoryId/:userId', requireSignin, adminMiddleware, remove);
 router.get('/categories', list);
