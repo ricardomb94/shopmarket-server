@@ -1,6 +1,34 @@
 const User = require('../models/user');
 const jwt = require('jsonwebtoken');
-const expressJwt = require('express-jwt');
+const expressJwt = require('express-Jwt');
+
+
+// exports.signup = (req, res) => {
+//     // console.log('REQ BODY ON SIGNUP', req.body);
+//     const { name, email, password } = req.body;
+
+//     User.findOne({ email }).exec((err, user) => {
+//         if (user) {
+//             return res.status(400).json({
+//                 error: 'Email is taken'
+//             });
+//         }
+//     });
+
+//     let newUser = new User({ name, email, password });
+
+//     newUser.save((err, success) => {
+//         if (err) {
+//             console.log('SIGNUP ERROR', err);
+//             return res.status(400).json({
+//                 error: err
+//             });
+//         }
+//         res.json({
+//             message: 'Signup success! Please signin'
+//         });
+//     });
+// };
 
 //Mailgun
 const mailgun = require("mailgun-js");
@@ -124,7 +152,7 @@ exports.signup = (req, res) => {
 
  exports.signin = (req, res) => {
  const { email, password } = req.body;
-//  console.log("=>",req.body)
+ console.log("REQ BODY SIGNIN",req.body)
  //On vérifie que l'utilisateur qui se connecte est déja enregistré
     User.findOne({email}).exec((err, user) => {
         if(err ||!user){
@@ -141,23 +169,50 @@ exports.signup = (req, res) => {
         //On génère le token et on l'envoie au cliente
         const token = jwt.sign({_id: req.userId}, process.env.JWT_SECRET, {expiresIn:'15d'});
         //On extrait les infos utilisateurs
-        const {_id, name, email, role} = user
-
+        const {_id, name, email, role} = user 
+        
+        user.tokens = user.tokens.concat({token})
+        user.save()
+        
         return res.json({
             token,
             user: {_id, name, email, role}
         });
+        
     });
  };
 
 
- exports.requireSignin = expressJwt({
-    secret: process.env.JWT_SECRET // req.user._id
+//Vérifier la validité du token et rendre la data relative à user(info profile/ user._id ) facilement accessible à partir  de l'objet request.
+// exports.requireSignin = expressJwt({
+//     secret: process.env.JWT_SECRET// req.user._id
+// });
+
+exports.requireSignin = expressJwt({
+    secret: process.env.JWT_SECRET,
+    credentialsRequired:false,
+    getToken: (req)=> {
+        if(
+            req.headers &&
+            req.headers.authorization &&
+            req.headers.authorization.split(' ')[0] === 'Bearer'
+        ){
+            console.log('REQ HEADERS',req.headers.authorization.split(' ')[1])
+            return req.headers.authorization.split(' ')[1];
+            
+        }
+        return null;
+        
+    },
+    
 });
 
+
 exports.adminMiddleware = (req, res, next) => {
-    User.findById({ _id: req.user._id }).exec((err, user) => {
-        if (err || !user) {
+
+    User.findById({_id:req.user._id}).exec((err, user) => {
+        console.log('ADMIN_MIDDLE', req.user)
+        if(err || !user){
             return res.status(400).json({
                 error: 'User not found'
             });
@@ -165,11 +220,43 @@ exports.adminMiddleware = (req, res, next) => {
 
         if (req.user.role !== 'admin') {
             return res.status(400).json({
-                error: 'Admin resource. Access denied.'
+                error:'Resource Admin!!! Accès refusée'
             });
         }
 
         req.profile = user;
+        console.log('REQ PROFILE', user)
         next();
     });
 };
+
+// exports.isAdmin = (req, res, next)=> {
+//     if (req.profile.role === 'admin'){
+//         return res.status(403).json({
+//             error: 'Resource Admin! Accès refusé'
+//         });
+//     }
+//     next();
+// };
+
+
+exports.forgotPassword = (req, res) => {
+    const {email} = req.body
+    
+    User.findOne({email},(err, user) => {
+        if (err || !user){
+            return res.status(400).json({
+                error: 'L\'utilisateur avec cet email n\'existe pas'
+            });
+        }
+        
+    });
+    
+};
+
+
+exports.resetPassword = (req, res) => {
+
+    
+}
+

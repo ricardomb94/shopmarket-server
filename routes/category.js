@@ -1,6 +1,7 @@
-const express = require("express");
+const express = require('express');
 const router = express.Router();
-const verify = require("../controllers/verifiedToken");
+// const verify = require('../controllers/verifyToken')
+
 
 const { create, categoryById, read, update, remove, list } = require("../controllers/category");
 const {requireSignin, adminMiddleware} = require('../controllers/auth');
@@ -15,6 +16,6 @@ router.get('/categories', list);
 
 
 router.param('categoryId', categoryById);
-router.param("userId", userById);
+router.param('userId', userById);
 
 module.exports = router;
