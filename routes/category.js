@@ -9,7 +9,7 @@ const {userById} = require('../controllers/user')
 
 // const { userById } = require("../controllers/user");
 router.get('/category/:categoryId', read)
-router.post('/category/create', requireSignin, create);
+router.post('/category/create/:userId', requireSignin, create);
 router.put('/category/:categoryId/:userId', requireSignin, adminMiddleware, update);
 router.delete('/category/:categoryId/:userId', requireSignin, adminMiddleware, remove);
 router.get('/categories', list);
