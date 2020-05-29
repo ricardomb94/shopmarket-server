@@ -127,7 +127,7 @@ const DOMAIN = process.env.DOMAIN_KEY;
  
  exports.signin = (req, res) => {
  const { email, password } = req.body;
-//  console.log("=>",req.body)
+ console.log("REQ BODY SIGNIN",req.body)
  //On vérifie que l'utilisateur qui se connecte est déja enregistré
     User.findOne({email}).exec((err, user) => {
         if(err ||!user){
@@ -186,7 +186,7 @@ exports.requireSignin = expressJwt({
 exports.adminMiddleware = (req, res, next) => {
 
     User.findById({_id:req.user._id}).exec((err, user) => {
-        console.log('ADMIN_MIDDLE', user)
+        console.log('ADMIN_MIDDLE', req.user)
         if(err || !user){
             return res.status(400).json({
                 error: 'Utilisateur non trouvé '
