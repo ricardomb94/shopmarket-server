@@ -6,6 +6,8 @@ const mongoose = require('mongoose');
 require('dotenv').config();
 
 
+
+
 const app = express();
 
 //Connexion BDD
@@ -15,7 +17,7 @@ mongoose
         useFindAndModify: false,
         useUnifiedTopology: true,
         useCreateIndex: true
-    })
+        })
     .then(() => console.log('BDD connectée'))
     .catch(err => console.log('DB CONNECTION ERROR:', err));
 

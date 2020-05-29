@@ -1,4 +1,4 @@
-const User = require('../models/User');
+const User = require('../models/user');
 const jwt = require('jsonwebtoken');
 const expressJwt = require('express-Jwt');
 
@@ -34,53 +34,78 @@ const expressJwt = require('express-Jwt');
 const mailgun = require("mailgun-js");
 const DOMAIN = process.env.DOMAIN_KEY;
 
- 
- exports.signup = (req, res) => {
-    //console.log('REQ BODY ON SIGNUP', req.body);
-    const {name, email, password} = req.body
-    User.findOne({email}).exec((err,user)=> {
-        if(user){
+
+ // exports.signup = (req, res) => {
+ //    const {name, email, password} = req.body
+ //    User.findOne({email}).exec((err,user)=> {
+ //        if(user){
+ //            return res.status(400).json({
+ //                error:'Cet email existe déjà'
+ //            });
+ //        }
+ //
+ //
+ //        const token = jwt.sign({name, email, password},
+ //            process.env.JWT_ACCOUNT_ACTIVATION,
+ //            {expiresIn:'10m'});
+ //
+ //            const mg = mailgun({'apiKey': process.env.MAILGUN_API_KEY, domain:DOMAIN});
+ //            const data = {
+ //                from: process.env.MAILGUN_FROM,
+ //                to: email,
+ //                subject: `Lien d'activation`,
+ //                text: "Testing some Mailgun awesomness!",
+ //                html: `
+ //                    <h2>Clickez sur le lien suivant afin d'activer votre compte</h2>
+ //                    <p>${process.env.CLIENT_URL}/auth/activate/${token}</p>
+ //                    <hr/>
+ //                    <p>Cet email contient des informations sensible. Veuillez le supprimer si vous en êtes pas le destinataire</p>
+ //                    <p>${process.env.CLIENT_URL}</p>
+ //                `
+ //            }
+ //            mg.messages()
+ //                .send(data)
+ //                .then(sent => {
+ //                    return res.json({
+ //                        message: `UN email vous été envoyé sur ${email}.Suivez les instructions pour activer votre compte`
+ //                    });
+ //                })
+ //                .catch(err => {
+ //                    console.log('SIGNUP EMAIL SENT ERROR', err)
+ //                    return res.json({
+ //                        message: err.message
+ //                    });
+ //                });
+ //    });
+ // };
+
+exports.signup = (req, res) => {
+    // console.log('REQ BODY ON SIGNUP', req.body);
+    const { name, email, password } = req.body;
+
+    User.findOne({ email }).exec((err, user) => {
+        if (user) {
             return res.status(400).json({
-                error:'Cet email existe déjà'
+                error: 'Email is taken'
             });
         }
-        
-        // const token = req.headers['x-access-token']
-        const token = jwt.sign({name, email, password},
-            process.env.JWT_ACCOUNT_ACTIVATION,
-            {expiresIn:'10m'});
-        
-            const mg = mailgun({'apiKey': process.env.MAILGUN_API_KEY, domain:DOMAIN});
-            const data = {
-                from: process.env.MAILGUN_FROM,
-                to: email,
-                subject: `Lien d'activation`,
-                text: "Testing some Mailgun awesomness!",
-                html: `
-                    <h2>Cliquez sur le lien suivant afin d'activer votre compte</h2>
-                    <p>${process.env.CLIENT_URL}/auth/activate/${token}</p>
-                    <hr/>
-                    <p>Cet email contient des informations sensible. Veuillez le supprimer si vous en êtes pas le destinataire</p>
-                    <p>${process.env.CLIENT_URL}</p>
-                `
-            }
-            mg.messages()
-                .send(data)
-                .then(sent => {
-                    console.log('SIGNUP EMAIL SENT', sent)
-                    return res.json({
-                        message: `UN email vous été envoyé sur ${email}.Suivez les instructions pour activer votre compte`
-                    });
-                })
-                .catch(err => {
-                    console.log('SIGNUP EMAIL SENT ERROR', err)
-                    return res.json({
-                        message: err.message
-                    });
-                });
     });
- };
- 
+    let newUser = new User({ name, email, password });
+
+    newUser.save((err, success) => {
+        if (err) {
+            console.log('SIGNUP ERROR', err);
+            return res.status(400).json({
+                error: err
+            });
+        }
+        res.json({
+            message: 'Signup success! Please signin'
+        });
+    });
+};
+
+
  //Pour activer le compte il nous faut le token
  exports.accountActivation = (req, res) => {
     const {token} = req.body
@@ -90,24 +115,24 @@ const DOMAIN = process.env.DOMAIN_KEY;
             if(err){
                 console.log('JWT VERIFY IN ACCOUNT ACTIVATION ERROR', err)
                 return res.status(401).json({
-                    err: 'Votre lien est expiré. Veuillez vous réinscrire'
-                });
+                    err: 'Votre lien est arrivé à expiration. Veuillez recommencer'
+                })
             }
             //En absence d'erreur on peut recueillir les infos utilisateurs( donc le nom, l'email et le mot de passe) grâce à la méthode decode() en lui passant le token en paramètre
-            
-            const {name, email, password} = jwt.decode(token);
-            
-            
+
+            const {name, email, password} = jwt.decode(token)
+
+
             //On instancie un nouveau user inspiré du model prédéfini/mongoose
-            const user = new User({name, email, password});
+            const user = new User({name, email, password})
             console.log('NEW USER', user)
-            
+
             //Enfin on peut sauvegarder le user dans la base de données
             user.save((err, user)=> {
                 if (err){
                     console.log('SAVE USER IN ACCOUNT ACTIVATION ERROR', err)
                     return res.status(401).json({
-                        error:'La sauvegarde n\'a pas fonctionnée. Veuillez réessayer'
+                        error:'La sauvegarde n\'a pas fonctionnée. Veuillez vous inscrire à nouveau'
                     });
                 }
                 return res.json({
@@ -124,7 +149,7 @@ const DOMAIN = process.env.DOMAIN_KEY;
         });
     }
  };
- 
+
  exports.signin = (req, res) => {
  const { email, password } = req.body;
  console.log("REQ BODY SIGNIN",req.body)
@@ -133,7 +158,7 @@ const DOMAIN = process.env.DOMAIN_KEY;
         if(err ||!user){
             return res.status(400).json({
                 error: 'Vous n\'êtes pas encore inscrit. Veuillez créer un compte'
-            });
+            })
         }
         //Autentifier
         if(!user.authenticate(password)) {
@@ -142,7 +167,7 @@ const DOMAIN = process.env.DOMAIN_KEY;
             });
         }
         //On génère le token et on l'envoie au cliente
-        const token = jwt.sign({_id: user._id}, process.env.JWT_SECRET, {expiresIn:'7d'});
+        const token = jwt.sign({_id: req.userId}, process.env.JWT_SECRET, {expiresIn:'15d'});
         //On extrait les infos utilisateurs
         const {_id, name, email, role} = user 
         
@@ -189,14 +214,16 @@ exports.adminMiddleware = (req, res, next) => {
         console.log('ADMIN_MIDDLE', req.user)
         if(err || !user){
             return res.status(400).json({
-                error: 'Utilisateur non trouvé '
+                error: 'User not found'
             });
         }
-        if(user.role !== 'admin'){
+
+        if (req.user.role !== 'admin') {
             return res.status(400).json({
                 error:'Resource Admin!!! Accès refusée'
             });
         }
+
         req.profile = user;
         console.log('REQ PROFILE', user)
         next();
