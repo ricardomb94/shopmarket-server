@@ -2,33 +2,10 @@ const User = require('../models/user');
 const jwt = require('jsonwebtoken');
 const expressJwt = require('express-Jwt');
 
+//Sendgrid 
+const sgMail = require('@sendgrid/mail')
+sgMail.setApiKey(process.env.SENDGRID_API_KEY)
 
-// exports.signup = (req, res) => {
-//     // console.log('REQ BODY ON SIGNUP', req.body);
-//     const { name, email, password } = req.body;
-
-//     User.findOne({ email }).exec((err, user) => {
-//         if (user) {
-//             return res.status(400).json({
-//                 error: 'Email is taken'
-//             });
-//         }
-//     });
-
-//     let newUser = new User({ name, email, password });
-
-//     newUser.save((err, success) => {
-//         if (err) {
-//             console.log('SIGNUP ERROR', err);
-//             return res.status(400).json({
-//                 error: err
-//             });
-//         }
-//         res.json({
-//             message: 'Signup success! Please signin'
-//         });
-//     });
-// };
 
 //Mailgun
 const mailgun = require("mailgun-js");
@@ -86,7 +63,7 @@ exports.signup = (req, res) => {
     User.findOne({ email }).exec((err, user) => {
         if (user) {
             return res.status(400).json({
-                error: 'Email is taken'
+                error: 'Cet email est déja pris'
             });
         }
     });
@@ -214,11 +191,11 @@ exports.adminMiddleware = (req, res, next) => {
         console.log('ADMIN_MIDDLE', req.user)
         if(err || !user){
             return res.status(400).json({
-                error: 'User not found'
+                error: 'Cet utilisateur n\existe pas dans notre système'
             });
         }
 
-        if (req.user.role !== 'admin') {
+        if (user.role !== "admin") {
             return res.status(400).json({
                 error:'Resource Admin!!! Accès refusée'
             });
@@ -250,6 +227,36 @@ exports.forgotPassword = (req, res) => {
             });
         }
         
+        const token = jwt.sign({_id: user._id}, 
+            process.env.JWT_RESET_PASSWORD, {expiresIn:'10m'});
+            
+            const emailData = {
+            
+                from: process.env.EMAIL_FROM,
+                to: email,
+                subject: `Lien de modification du mot de passe`,
+                html: `
+                    <h2>Clickez sur le lien que vous avez reçu afin de modifier votre mot de passe</h2>
+                    <p>${process.env.CLIENT_URL}/auth/password/reset/${token}</p>
+                    <hr/>
+                    <p>Cet email contient des informations sensible. Veuillez le supprimer si vous en êtes pas le destinataire</p>
+                    <p>${process.env.CLIENT_URL}</p>
+                `  
+            }
+            sgMail
+                .send(emailData)
+                .then(sent => {
+                    console.log('SIGNUP EMAIL SENT', sent)
+                    return res.json({
+                        message: `UN email vous été envoyé sur ${email}.Suivez les instructions pour activer votre compte`
+                    });
+                })
+                .catch(err => {
+                    console.log('SIGNUP EMAIL SENT ERROR', err)
+                    return res.json({
+                        message: err.message
+                    });
+                });
     });
     
 };
