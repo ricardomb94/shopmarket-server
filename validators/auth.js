@@ -26,6 +26,13 @@ exports.userSigninValidator = [
 ];
 
 exports.forgotPasswordValidator = [
+    check('email')
+        .not()
+        .isEmpty()
+        .isEmail()
+        .withMessage('Veuillez saisir un email valide')
+];
+exports.resettPasswordValidator = [
     check('newPassword')
         .not()
         .isEmpty()

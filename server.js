@@ -1,7 +1,7 @@
 const express = require('express');
 const morgan = require('morgan');
 const cors = require('cors');
-const bodyParser = require('body-parser');
+const bodyParser = require('body-parser');//Une methode d'Express qui permet de lire les données des inupts de formulaire et les stocke sous forme d'objet Js accessible ds req.body
 const mongoose = require('mongoose');
 require('dotenv').config();
 
@@ -30,8 +30,9 @@ const productRoutes = require('./routes/product');
 
 //app middleware
 app.use(morgan('dev'));
-app.use(bodyParser.urlencoded({extended: true}));
-app.use(bodyParser.json());
+app.use(express.json());
+app.use(express.urlencoded({extended: false}));
+
 //app.use(cors()); // Autorise le partage de ressources entre origines multiples 
 if((process.env.NODE_ENV = 'development')){
      app.use(cors({origin: `http://localhost:3000`}))

@@ -53,7 +53,7 @@ exports.create = (req, res) => {
         //1mb = 1.000.000
         
         if(files.image){
-            // console.log('FILE IMAGE:',files.image);
+            console.log('FILE IMAGE:',files.image);
             
              //Limitation de la taille des images en fonction du poids
              if(files.image.size > 1000000){
@@ -73,6 +73,7 @@ exports.create = (req, res) => {
                 })
             }
             res.json(result);
+            console.log('PROD CONTROLLER', result)
         });
     });
 };
