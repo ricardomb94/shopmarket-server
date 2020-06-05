@@ -61,11 +61,12 @@ exports.create = (req, res) => {
                     error: 'L\'image doit avoir un poids inférieur à 1mb'
                 });
              }
-            
+            console.log('PRODUCT.IIMAGE.DATA', product.image.data)
             product.image.data = fs.readFileSync(files.image.path)
             product.image.contentType = files.image.type
         }
         product.save((err, result) => {
+        console.log('PRODUCT SAVE', result)
             if(err) {
                 return res.status(400).json({
                     // error: 'Quelque chose a mal fonctionné'

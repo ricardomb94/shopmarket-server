@@ -31,7 +31,7 @@ const productRoutes = require('./routes/product');
 //app middleware
 app.use(morgan('dev'));
 app.use(express.json());
-app.use(express.urlencoded({extended: false}));
+app.use(express.urlencoded({extended: true}));
 
 //app.use(cors()); // Autorise le partage de ressources entre origines multiples 
 if((process.env.NODE_ENV = 'development')){
@@ -42,10 +42,7 @@ app.use('/api',authRoutes)
 app.use('/api',userRoutes)
 app.use('/api',categoryRoutes)
 app.use('/api',productRoutes)
-// app.use((req, res, next)=> {
-//     console.log(req.method, req.path)
-//     next()
-// })
+
 
 const port = process.env.PORT || 8000;
 app.listen(port, () => {
