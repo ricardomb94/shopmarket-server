@@ -7,11 +7,6 @@ const mongoose = require('mongoose');
 const cookieParser = require('cookie-parser')
 require('dotenv').config();
 
-
-
-
-
-
 //Connexion BDD
 mongoose
     .connect(process.env.DATABASE,{
@@ -36,7 +31,7 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(express.urlencoded({extended: true}));
 
-//app.use(cors()); // Autorise le partage de ressources entre origines multiples 
+//app.use(cors()); // Autorise le partage de ressources entre origines multiples
 if((process.env.NODE_ENV = 'development')){
      app.use(cors({origin: `http://localhost:3000`}))
  }

@@ -19,7 +19,7 @@
     "express": "^4.17.1",
     "express-jwt": "^5.3.3",
     "express-validator": "^6.4.1",
-    "formidable": "^1.2.2",
+    "formidable": "^2.0.0-canary.20200504.1",
     "google-auth-library": "^6.0.0",
     "jsonwebtoken": "^8.5.1",
     "mailgun-js": "^0.22.0",
