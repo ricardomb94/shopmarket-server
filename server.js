@@ -1,14 +1,16 @@
 const express = require('express');
+const app = express();
 const morgan = require('morgan');
 const cors = require('cors');
 const bodyParser = require('body-parser');//Une methode d'Express qui permet de lire les données des inupts de formulaire et les stocke sous forme d'objet Js accessible ds req.body
 const mongoose = require('mongoose');
+const cookieParser = require('cookie-parser')
 require('dotenv').config();
 
 
 
 
-const app = express();
+
 
 //Connexion BDD
 mongoose
@@ -31,6 +33,7 @@ const productRoutes = require('./routes/product');
 //app middleware
 app.use(morgan('dev'));
 app.use(express.json());
+app.use(cookieParser());
 app.use(express.urlencoded({extended: true}));
 
 //app.use(cors()); // Autorise le partage de ressources entre origines multiples 

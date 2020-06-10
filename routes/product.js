@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 
+
 const { create, productById, read, remove, update } = require("../controllers/product");
 const {requireSignin, adminMiddleware} = require('../controllers/auth');
 const {userById} = require('../controllers/user')

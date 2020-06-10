@@ -46,15 +46,14 @@ exports.create = (req, res) => {
             });
         }
         
-        //Si toutes les conditions sont remplies, on peu créer le produit
+        //Si toutes les conditions sont remplies, on peut créer le produit
         let product = new Product(fields);
+        console.log(fields)
         
         // 1kb = 1000
         //1mb = 1.000.000
         
-        if(files.image){
-            console.log('FILE IMAGE:',files.image);
-            
+        if(files.image){    
              //Limitation de la taille des images en fonction du poids
              if(files.image.size > 1000000){
                 return res.status(400).json({

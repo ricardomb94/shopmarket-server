@@ -1,38 +1,88 @@
 const User = require('../models/user');
 const jwt = require('jsonwebtoken');
-const expressJwt = require('express-Jwt');
+const expressJwt = require('express-jwt');
 
+
+// exports.signup = (req, res) => {
+//     // console.log('REQ BODY ON SIGNUP', req.body);
+//     const { name, email, password } = req.body;
+
+//     User.findOne({ email }).exec((err, user) => {
+//         if (user) {
+//             return res.status(400).json({
+//                 error: 'Email is taken'
+//             });
+//         }
+//     });
+
+//     let newUser = new User({ name, email, password });
+
+//     newUser.save((err, user) => {
+//         if (err) {
+//             console.log('SIGNUP ERROR', err);
+//             return res.status(400).json({
+//                 error: err
+//             });
+//         } 
+//         const token = jwt.sign({_id:user._id}, process.env.JWT_SECRET, {expiresIn:'7d'})
+        
+//         res.json({
+//             message: 'Signup success! Please signin',
+//             token
+            
+//         });
+//     });
+// };
+
+
+//Sendgrid 
+const sgMail = require('@sendgrid/mail')
+sgMail.setApiKey(process.env.SENDGRID_API_KEY)
 
 exports.signup = (req, res) => {
-    // console.log('REQ BODY ON SIGNUP', req.body);
-    const { name, email, password } = req.body;
-
-    User.findOne({ email }).exec((err, user) => {
-        if (user) {
+    const {name, email, password} = req.body;
+    
+    User.findOne({email}).exec((err, user) => {
+        if(user){
             return res.status(400).json({
-                error: 'Email is taken'
+                error: 'Cet email existe déjà'
             });
         }
-    });
-
-    let newUser = new User({ name, email, password });
-
-    newUser.save((err, user) => {
-        if (err) {
-            console.log('SIGNUP ERROR', err);
-            return res.status(400).json({
-                error: err
-            });
-        } 
-        const token = jwt.sign({id:user._id}, process.env.JWT_SECRET, {expiresIn:'7d'})
         
-        res.json({
-            message: 'Signup success! Please signin',
-            token
-            
-        });
+        const token = jwt.sign({name, email, password}, 
+        process.env.JWT_ACCOUNT_ACTIVATION, {expiresIn:'10m'});
+        
+        const emailData = {
+        
+            from: process.env.EMAIL_FROM,
+            to: email,
+            subject: `Lien d'activation`,
+            html: `
+                <h2>Clickez sur le lien que vous avez reçu afin d'activer votre compte</h2>
+                <p>${process.env.CLIENT_URL}/auth/activate/${token}</p>
+                <hr/>
+                <p>Cet email contient des informations sensible. Veuillez le supprimer si vous en êtes pas le destinataire</p>
+                <p>${process.env.CLIENT_URL}</p>
+            `  
+        }
+        sgMail
+            .send(emailData)
+            .then(sent => {
+                console.log('SIGNUP EMAIL SENT', sent)
+                return res.json({
+                    message: `UN email vous été envoyé sur ${email}.Suivez les instructions pour activer votre compte`
+                });
+            })
+            .catch(err => {
+                console.log('SIGNUP EMAIL SENT ERROR', err)
+                return res.json({
+                    message: err.message
+                });
+            });
     });
 };
+
+
 
 
 
@@ -82,9 +132,9 @@ exports.signup = (req, res) => {
  };
 
  exports.signin = (req, res) => {
- const { email, password } = req.body;
+  const {email, password}= req.body
  //On vérifie que l'utilisateur qui se connecte est déja enregistré
-    User.findOne({email: req.body.email}).exec((err, user) => {
+    User.findOne({email}).exec((err, user) => {
         if(err ||!user){
             return res.status(400).json({
                 error: 'Vous n\'êtes pas encore inscrit. Veuillez créer un compte'
@@ -97,17 +147,17 @@ exports.signup = (req, res) => {
             });
         }
         //On génère le token et on l'envoie au cliente
-        const token = jwt.sign({_id: req.userId}, process.env.JWT_SECRET, {expiresIn:'15d'});
+        const token = jwt.sign({_id: user._id}, process.env.JWT_SECRET, {expiresIn:'15d'});
         console.log('EXPORT SIGNIN TOKEN', token)
         //On extrait les infos utilisateurs
         const {_id, name, email, role} = user 
         
-        user.tokens = user.tokens.concat({token})
-        user.save()
+        // user.tokens = user.tokens.concat({token})
+        // user.save()
         
         return res.json({
             token,
-            user: {_id, name, email, role}
+            user:{_id, name, email, role}
         });
         
     });
@@ -142,8 +192,8 @@ exports.requireSignin = expressJwt({
 exports.adminMiddleware = (req, res, next) => {
 
     User.findById({_id:req.user._id}).exec((err, user) => {
-        // console.log('ADMIN_MIDDLE', req.user._id)
-        console.log('ADMIN_MIDDLE', res.undefined)
+        console.log('ADMIN_MIDDLE', req.user)
+        
         
         if(err || !user){
             return res.status(400).json({
@@ -151,7 +201,7 @@ exports.adminMiddleware = (req, res, next) => {
             });
         }
 
-        if (req.user.role !== 'admin') {
+        if (user.role !== 'admin') {
             return res.status(400).json({
                 error:'Resource Admin!!! Accès refusée'
             });

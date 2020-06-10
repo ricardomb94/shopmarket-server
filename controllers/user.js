@@ -7,7 +7,7 @@ exports.userById = (req, res, next, userId) => {
                 error: 'Utilisateur non trouvé'
             })
         }
-        req.Profile = user;
+        req.profile = user;
         next();
     })
 };
