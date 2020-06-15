@@ -21,7 +21,7 @@ exports.productById = (req,res, next, id) =>{
 // => ProductRoutes. Créer une nouvelle route
 
 exports.read = (req, res) => {
-    //Pour optimiser la quête on évite d'uploader l'image(undefined) 
+    //Pour optimiser la quête on évite d'uploader l'image(undefined)
     req.product.image = undefined
     return res.json(req.product);
 };
@@ -36,32 +36,29 @@ exports.create = (req, res) => {
                 // err: errorHandler(err)
             });
         };
-        
+
         //Vérifier que tous les champs(fields) sont remplis
         const {name, description, price, category, quantity, shipping} = fields
-        
+
         if(!name || !description || !price || !category || !quantity || !shipping){
             return res.status(400).json({
                 error: 'Tous les champs sont obligatoires'
             });
         }
-        
+
         //Si toutes les conditions sont remplies, on peu créer le produit
         let product = new Product(fields);
-        
+
         // 1kb = 1000
         //1mb = 1.000.000
-        
+
         if(files.image){
-            // console.log('FILE IMAGE:',files.image);
-            
              //Limitation de la taille des images en fonction du poids
              if(files.image.size > 1000000){
                 return res.status(400).json({
                     error: 'L\'image doit avoir un poids inférieur à 1mb'
                 });
              }
-            
             product.image.data = fs.readFileSync(files.image.path)
             product.image.contentType = files.image.type
         }
@@ -77,7 +74,7 @@ exports.create = (req, res) => {
     });
 };
 
-//Rappeler le produit grâce à l'objet request   
+//Rappeler le produit grâce à l'objet request
 exports.remove = (req, res) => {
     let product = req.product
     product.remove((err, deletedProduct) => {
@@ -104,33 +101,33 @@ exports.update = (req, res) => {
                 // err: errorHandler(err)
             });
         };
-        
+
         //Vérifier que tous les champs(fields) sont remplis
         const {name, description, price, category, quantity, shipping} = fields
-        
+
         if(!name || !description || !price || !category || !quantity || !shipping){
             return res.status(400).json({
                 error: 'Tous les champs sont obligatoires'
             });
         }
-        
+
         //Si toutes les conditions sont remplies, on peu créer le produit
         let product = req.product;
         product = _.extend(product, fields)
-        
+
         // 1kb = 1000
         //1mb = 1.000.000
-        
+
         if(files.image){
             // console.log('FILE IMAGE:',files.image);
-            
+
              //Limitation de la taille des images en fonction du poids
              if(files.image.size > 1000000){
                 return res.status(400).json({
                     error: 'L\'image doit avoir un poids inférieur à 1mb'
                 });
              }
-            
+
             product.image.data = fs.readFileSync(files.image.path)
             product.image.contentType = files.image.type
         }
@@ -145,3 +142,32 @@ exports.update = (req, res) => {
         });
     });
 };
+
+
+ /**
+ * Affichage des produits
+ *by sell=/products?sortBy=sold&order=desc&limit=4
+ *by sell=/products?sortBy=createdAt&order=desc&limit=4
+ *S'il n' y a aucun paramètre précisé, alors tous les produits     seront retournés
+ 
+ */
+ exports.list = (req, res) => {
+    let order = req.query.order ? req.query.order : 'asc'
+    let sortBy = req.query.sortBy ? req.query.sortBy : '_id'
+    let limit = req.query.limit ? parseInt(req.query.limit) : 6
+    
+    Product.find()
+        .select("-image")
+        .populate('category')
+        .sort([[sortBy, order]])
+        .limit(limit)
+        .exec((err, products)=>{
+            if(err){
+                return res.status(400).json({
+                    error: "Produits non trouvés"
+                });       
+                
+            }
+            res.send(products)
+        });
+ }

@@ -24,3 +24,19 @@ exports.userSigninValidator = [
         .isLength({min: 6})
         .withMessage('Le mot de passe doit contenir au moins 6 caractères')
 ];
+
+exports.forgotPasswordValidator = [
+    check('email')
+        .not()
+        .isEmpty()
+        .isEmail()
+        .withMessage('Veuillez saisir un email valide')
+];
+exports.resettPasswordValidator = [
+    check('newPassword')
+        .not()
+        .isEmpty()
+        .isLength({min: 6})
+        .withMessage('Le mot de passe doit contenir au moins 6 caractères')
+];
+
