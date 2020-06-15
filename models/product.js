@@ -24,10 +24,12 @@ const productSchema = new mongoose.Schema({
         maxlength: 32
     },
     quantity:{
-        type:Number,
-        
+        type:Number, 
     },
-    
+    sold:{
+        type:Number, 
+        default:0
+    },
     category:{
         type: ObjectId,
         ref: 'Category',

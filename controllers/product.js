@@ -53,20 +53,16 @@ exports.create = (req, res) => {
         //1mb = 1.000.000
 
         if(files.image){
-            console.log('FILE IMAGE:',files.image);
-
              //Limitation de la taille des images en fonction du poids
              if(files.image.size > 1000000){
                 return res.status(400).json({
                     error: 'L\'image doit avoir un poids inférieur à 1mb'
                 });
              }
-            console.log('PRODUCT.IIMAGE.DATA', product.image.data)
             product.image.data = fs.readFileSync(files.image.path)
             product.image.contentType = files.image.type
         }
         product.save((err, result) => {
-        console.log('PRODUCT SAVE', result)
             if(err) {
                 return res.status(400).json({
                     // error: 'Quelque chose a mal fonctionné'
@@ -74,7 +70,6 @@ exports.create = (req, res) => {
                 })
             }
             res.json(result);
-            console.log('PROD CONTROLLER', result)
         });
     });
 };
@@ -147,3 +142,32 @@ exports.update = (req, res) => {
         });
     });
 };
+
+
+ /**
+ * Affichage des produits
+ *by sell=/products?sortBy=sold&order=desc&limit=4
+ *by sell=/products?sortBy=createdAt&order=desc&limit=4
+ *S'il n' y a aucun paramètre précisé, alors tous les produits     seront retournés
+ 
+ */
+ exports.list = (req, res) => {
+    let order = req.query.order ? req.query.order : 'asc'
+    let sortBy = req.query.sortBy ? req.query.sortBy : '_id'
+    let limit = req.query.limit ? parseInt(req.query.limit) : 6
+    
+    Product.find()
+        .select("-image")
+        .populate('category')
+        .sort([[sortBy, order]])
+        .limit(limit)
+        .exec((err, products)=>{
+            if(err){
+                return res.status(400).json({
+                    error: "Produits non trouvés"
+                });       
+                
+            }
+            res.send(products)
+        });
+ }

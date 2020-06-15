@@ -147,7 +147,7 @@ exports.adminMiddleware = (req, res, next) => {
             });
         }
 
-        if (req.profile.role !== 'admin') {
+        if (user.role !== 'admin') {
             return res.status(400).json({
                 error:'Resource Admin!!! Accès refusée'
             });
