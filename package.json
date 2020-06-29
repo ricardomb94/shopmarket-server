@@ -6,8 +6,11 @@
   "author": "Ricardo",
   "license": "MIT",
   "scripts": {
-    "start": "nodemon server.js",
-    "heroku-postbuild": "cd client && yarn install && yarn run build"
+    "start": "node server.js",
+    "server": "nodemon server.js",
+    "client": "yarn start --prefix client",
+    "dev": "concurrently \" yarn run server\"\"yarn run start --prefix client\"",
+    "heroku-postbuild": "YARN_CONFIG_PRODUCTION=false yarn install --prefix client && yarn run build --prefix client"
   },
   "dependencies": {
     "@sendgrid/mail": "^7.1.1",
