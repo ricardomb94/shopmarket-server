@@ -11,7 +11,7 @@ require('dotenv').config();
 
 //Connexion BDD
 mongoose
-    .connect(process.env.MONGODB_URI,{
+    .connect(process.env.DATABASE,{
         useNewUrlParser: true,
         useFindAndModify: false,
         useUnifiedTopology: true,
