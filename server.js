@@ -43,13 +43,13 @@ app.use('/api',authRoutes)
 app.use('/api',userRoutes)
 app.use('/api',categoryRoutes)
 app.use('/api',productRoutes)
-
+// app.use('/', express.static(path.join(__dirname, '/client/build')))
 
 //Serve static assets if in production
 if (process.env.NODE_ENV === 'production') {
     //Set static folder name
     //all the javascript and css files will be read and served from this folder
-    app.use(express.static('client/build'));
+    app.use(express.static('/client/build'));
     app.get('*', (req,res) =>{
         res.sendFile(path.join(__dirname, 'client', 'build', 'index.html'));//relative path
     })
