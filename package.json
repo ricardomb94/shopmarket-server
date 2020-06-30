@@ -2,6 +2,10 @@
   "name": "shopmarket",
   "version": "1.0.0",
   "description": "E-commerce App",
+  "engines": {
+    "node": "13.9.0",
+    "yarn":"1.22.0"
+  },
   "main": "server.js",
   "author": "Ricardo",
   "license": "MIT",
