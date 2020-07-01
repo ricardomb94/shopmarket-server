@@ -49,8 +49,8 @@ app.use('/api',productRoutes)
 if (process.env.NODE_ENV === 'production') {
     //Set static folder name
     //all the javascript and css files will be read and served from this folder
-    app.use(express.static('/client/build'));
-    app.get('/*', (req,res) =>{
+    app.use(express.static('client/build'));
+    app.get('*', (req, res) =>{
         res.sendFile(path.join(__dirname, 'client', 'build', 'index.html'));//relative path
     });
 }

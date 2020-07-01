@@ -2,11 +2,8 @@
   "name": "shopmarket",
   "version": "1.0.0",
   "description": "E-commerce App",
-  "engines": {
-    "node": "13.9.0",
-    "yarn":"1.22.0"
-  },
-  "main": "server.js",
+ 
+  "main": "App.js",
   "author": "Ricardo",
   "license": "MIT",
   "scripts": {
@@ -14,7 +11,7 @@
     "server": "nodemon server.js",
     "client": "yarn start --prefix client",
     "dev": "concurrently \" yarn run server\"\"yarn run start --prefix client\"",
-    "heroku-postbuild": "YARN_CONFIG_PRODUCTION=false yarn install --prefix client && yarn run build --prefix client"
+    "heroku-postbuild": "YARN_CONFIG_PRODUCTION=false yarn install --prefix client && yarn build --prefix client"
   },
   "dependencies": {
     "@sendgrid/mail": "^7.1.1",
@@ -34,6 +31,10 @@
     "mongoose": "^5.9.14",
     "morgan": "^1.10.0",
     "nodemon": "^2.0.4"
+  },
+  "engines": {
+    "node": "13.9.0",
+    "yarn":"1.22.0"
   }
 }
 
