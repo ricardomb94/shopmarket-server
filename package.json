@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "E-commerce App",
  
-  "main": "App.js",
+  "main": "index.js",
   "author": "Ricardo",
   "license": "MIT",
   "scripts": {
