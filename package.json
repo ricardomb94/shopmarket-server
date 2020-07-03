@@ -7,7 +7,7 @@
   "author": "Ricardo",
   "license": "MIT",
   "scripts": {
-    "start": "node server.js",
+    "start": "node index.js",
     "server": "nodemon server.js",
     "client": "yarn start --prefix client",
     "dev": "concurrently \" yarn run server\"\"yarn run start --prefix client\"",
