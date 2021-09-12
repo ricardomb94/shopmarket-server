@@ -3,37 +3,87 @@ const jwt = require('jsonwebtoken');
 const expressJwt = require('express-jwt');
 
 
-exports.signup = (req, res) => {
-    // console.log('REQ BODY ON SIGNUP', req.body);
-    const { name, email, password } = req.body;
+// exports.signup = (req, res) => {
+//     // console.log('REQ BODY ON SIGNUP', req.body);
+//     const { name, email, password } = req.body;
 
-    User.findOne({ email }).exec((err, user) => {
-        if (user) {
+//     User.findOne({ email }).exec((err, user) => {
+//         if (user) {
+//             return res.status(400).json({
+//                 error: 'Cet email existe déjà'
+//             });
+//         }
+//     });
+
+//     let newUser = new User({ name, email, password });
+
+//     newUser.save((err, user) => {
+//         if (err) {
+//             console.log('SIGNUP ERROR', err);
+//             return res.status(400).json({
+//                 error: err
+//             });
+//         }
+//         const token = jwt.sign({id:user._id}, process.env.JWT_SECRET, {expiresIn:'7d'})
+
+//         res.json({
+//             message: 'Signup success! Please signin',
+//             token
+
+//         });
+//     });
+// };
+
+
+
+// const validateToken =  require('../helpers/utils')
+
+//Sendgrid 
+const sgMail = require('@sendgrid/mail')
+sgMail.setApiKey(process.env.SENDGRID_API_KEY)
+
+exports.signup = (req, res) => {
+    const {name, email, password} = req.body;
+    
+    User.findOne({email}).exec((err, user) => {
+        if(user){
             return res.status(400).json({
                 error: 'Cet email existe déjà'
             });
         }
-    });
-
-    let newUser = new User({ name, email, password });
-
-    newUser.save((err, user) => {
-        if (err) {
-            console.log('SIGNUP ERROR', err);
-            return res.status(400).json({
-                error: err
-            });
+        
+        const token = jwt.sign({name, email, password}, 
+        process.env.JWT_ACCOUNT_ACTIVATION, {expiresIn:'10m'});
+        
+        const emailData = {
+        
+            from: process.env.EMAIL_FROM,
+            to: email,
+            subject: `Lien d'activation`,
+            html: `
+                <h2>Clickez sur le lien que vous avez reçu afin d'activer votre compte</h2>
+                <p>${process.env.CLIENT_URL}/auth/activate/${token}</p>
+                <hr/>
+                <p>Cet email contient des informations sensible. Veuillez le supprimer si vous en êtes pas le destinataire</p>
+                <p>${process.env.CLIENT_URL}</p>
+            `  
         }
-        const token = jwt.sign({id:user._id}, process.env.JWT_SECRET, {expiresIn:'7d'})
-
-        res.json({
-            message: 'Signup success! Please signin',
-            token
-
-        });
+        sgMail
+            .send(emailData)
+            .then(sent => {
+                console.log('SIGNUP EMAIL SENT', sent)
+                return res.json({
+                    message: `UN email vous été envoyé sur ${email}.Suivez les instructions pour activer votre compte`
+                });
+            })
+            .catch(err => {
+                console.log('SIGNUP EMAIL SENT ERROR', err)
+                return res.json({
+                    message: err.message
+                });
+            });
     });
 };
-
 
 
 
@@ -121,6 +171,7 @@ exports.signup = (req, res) => {
 
 exports.requireSignin = expressJwt({
     secret: process.env.JWT_SECRET,
+    algorithms: ['HS256'], 
     credentialsRequired:false,
     getToken: (req)=> {
         if(
@@ -131,6 +182,8 @@ exports.requireSignin = expressJwt({
             console.log('REQ HEADERS',req.headers.authorization.split(' ')[1])
             return req.headers.authorization.split(' ')[1];
 
+        }else if(req.query && req.query.token){
+            return req.query.token
         }
         return null;
 
